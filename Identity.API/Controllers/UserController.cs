@@ -100,8 +100,5 @@ namespace Identity.API.Controllers
 
             return Ok(result);
         }
-
-        [HttpGet]
-        public async Task
     }
 }
