@@ -48,13 +48,13 @@ namespace Identity.API.Controllers
             };
 
             var result = await _userManager.CreateAsync(newUser, registrationDTO.Password);
-        
-            if(!result.Succeeded)
+
+            if (!result.Succeeded)
             {
                 return BadRequest(result.Errors);
             }
 
-            foreach(var role in registrationDTO.Roles)
+            foreach (var role in registrationDTO.Roles)
             {
                 await _userManager.AddToRoleAsync(newUser, role);
             }
@@ -99,6 +99,24 @@ namespace Identity.API.Controllers
             var result = await _userManager.Users.ToListAsync();
 
             return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetById(string id)
+        {
+            try
+            {
+                var result = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == id);
+                if (result is null)
+                {
+                    return NotFound("User is not found");
+                }
+                return Ok(result);
+            }
+            catch
+            {
+                return NotFound("User is not found");
+            }
         }
     }
 }
