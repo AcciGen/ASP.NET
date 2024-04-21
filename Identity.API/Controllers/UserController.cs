@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Identity.API.Controllers
 {
-    [Route("api/[controller]/[action]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
     {
@@ -22,7 +22,7 @@ namespace Identity.API.Controllers
             _signInManager = signInManager;
         }
 
-        [HttpPost]
+        [HttpPost("Registration")]
         public async Task<ActionResult<string>> Registration(RegistrationDTO registrationDTO)
         {
             if (!ModelState.IsValid)
@@ -68,7 +68,7 @@ namespace Identity.API.Controllers
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost("Login")]
         public async Task<ActionResult<string>> Login(LoginDTO loginDTO)
         {
             var user = await _userManager.FindByEmailAsync(loginDTO.Email);
