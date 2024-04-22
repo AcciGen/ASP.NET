@@ -1,5 +1,8 @@
-﻿using Identity.Domain.Entities.DTOs;
+﻿using Identity.Application.Abstractions.IServices;
+using Identity.Application.Services.AuthServices;
+using Identity.Domain.Entities.DTOs;
 using Identity.Domain.Entities.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -9,20 +12,24 @@ namespace Identity.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly IAuthService _authService;
 
-        public UserController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<AppUser> signInManager)
+        public UserController(UserManager<AppUser> userManager, RoleManager<IdentityRole> roleManager, SignInManager<AppUser> signInManager, IAuthService authService)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _signInManager = signInManager;
+            _authService = authService;
         }
 
         [HttpPost("Registration")]
+        [AllowAnonymous]
         public async Task<ActionResult<string>> Registration(RegistrationDTO registrationDTO)
         {
             if (!ModelState.IsValid)
@@ -69,7 +76,8 @@ namespace Identity.API.Controllers
         }
 
         [HttpPost("Login")]
-        public async Task<ActionResult<string>> Login(LoginDTO loginDTO)
+        [AllowAnonymous]
+        public async Task<ActionResult<AuthResponseDTO>> Login(LoginDTO loginDTO)
         {
             var user = await _userManager.FindByEmailAsync(loginDTO.Email);
 
@@ -90,10 +98,13 @@ namespace Identity.API.Controllers
             if (!result.Succeeded)
                 throw new Exception("There is an issue with signing in");
 
-            return Ok(result);
+            var token = await _authService.GenerateToken(user);
+
+            return Ok(token);
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<string>> GetAllUsers()
         {
             var result = await _userManager.Users.ToListAsync();
@@ -109,13 +120,13 @@ namespace Identity.API.Controllers
                 var result = await _userManager.Users.FirstOrDefaultAsync(x => x.Id == id);
                 if (result is null)
                 {
-                    return NotFound("User is not found");
+                    return NotFound("User not found");
                 }
                 return Ok(result);
             }
             catch
             {
-                return NotFound("User is not found");
+                return NotFound("User not found");
             }
         }
     }

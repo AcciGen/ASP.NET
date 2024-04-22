@@ -1,4 +1,5 @@
 
+using Identity.Application;
 using Identity.Domain.Entities.Models;
 using Identity.Infrastructure;
 using Identity.Infrastructure.Persistance;
@@ -32,6 +33,8 @@ namespace Identity.API
             });
 
             builder.Services.AddControllers();
+
+            builder.Services.AddApplication();
 
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
