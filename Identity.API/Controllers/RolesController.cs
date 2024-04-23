@@ -1,5 +1,6 @@
 ﻿using Identity.Domain.Entities.DTOs;
 using Identity.Domain.Entities.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +21,8 @@ namespace Identity.API.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<ResponseDTO>> CreateRole(RoleDTO role)
+        [Authorize(Roles = "Manager")]
+        public async Task<ActionResult<ResponseDTO>> Create(RoleDTO role)
         {
 
             var result = await _roleManager.FindByNameAsync(role.RoleName);
@@ -46,11 +48,61 @@ namespace Identity.API.Controllers
 
 
         [HttpGet]
-        public async Task<ActionResult<List<IdentityRole>>> GetAllRoles()
+        [Authorize(Roles = "Admin, Manager")]
+        public async Task<ActionResult<List<IdentityRole>>> GetAll()
         {
             var roles = await _roleManager.Roles.ToListAsync();
 
             return Ok(roles);
+        }
+
+        [HttpGet("{id}")]
+        [Authorize(Roles = "Admin, Manager")]
+        public async Task<ActionResult<IdentityRole>> GetById(string id)
+        {
+            var role = await _roleManager.FindByIdAsync(id);
+
+            if (role == null)
+            {
+                return BadRequest(role);
+            }
+
+            return Ok(role);
+        }
+
+        [HttpDelete("{id}")]
+        [Authorize(Roles = "Manager")]
+        public async Task<ActionResult<string>> Delete(string id)
+        {
+            var role = await _roleManager.FindByIdAsync(id);
+
+            if (role == null)
+            {
+                return BadRequest("Role not found!");
+            }
+
+            await _roleManager.DeleteAsync(role);
+
+            return Ok("Role deleted successfully!");
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Manager")]
+        public async Task<ActionResult<string>> Update(string id, RoleDTO updatedRole)
+        {
+            var role = await _roleManager.FindByIdAsync(id);
+
+            if (role == null)
+            {
+                return BadRequest("Role not found!");
+            }
+
+            role.Name = updatedRole.RoleName;
+            role.NormalizedName = updatedRole.RoleName.ToUpper();
+
+            await _roleManager.UpdateAsync(role);
+
+            return Ok("Role updated successfully!");
         }
     }
 }
