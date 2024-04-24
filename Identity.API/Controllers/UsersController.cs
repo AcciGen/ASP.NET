@@ -1,9 +1,8 @@
-﻿using Identity.Application.Abstractions.IServices;
-using Identity.Application.Services.AuthServices;
+﻿using Identity.API.Filters;
+using Identity.Application.Abstractions.IServices;
 using Identity.Domain.Entities.DTOs;
 using Identity.Domain.Entities.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +29,7 @@ namespace Identity.API.Controllers
 
         [HttpPost("Registration")]
         [AllowAnonymous]
+        [ExceptionFilter]
         public async Task<ActionResult<string>> Registration(RegistrationDTO registrationDTO)
         {
             if (!ModelState.IsValid)
@@ -51,7 +51,6 @@ namespace Identity.API.Controllers
                 UserName = registrationDTO.UserName,
                 Email = registrationDTO.Email,
                 Age = registrationDTO.Age,
-                Status = registrationDTO.Status
             };
 
             var result = await _userManager.CreateAsync(newUser, registrationDTO.Password);
@@ -104,7 +103,9 @@ namespace Identity.API.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin")]
+        [AuthorizationFilter]
+        [ResourceFilter]
+        [EndpointFilter]
         public async Task<ActionResult<string>> GetAllUsers()
         {
             var result = await _userManager.Users.ToListAsync();
@@ -114,6 +115,7 @@ namespace Identity.API.Controllers
 
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin")]
+        [ActionFilter]
         public async Task<IActionResult> GetById(string id)
         {
             try

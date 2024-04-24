@@ -1,4 +1,5 @@
-﻿using Identity.Domain.Entities.DTOs;
+﻿using Identity.API.Filters;
+using Identity.Domain.Entities.DTOs;
 using Identity.Domain.Entities.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -49,6 +50,7 @@ namespace Identity.API.Controllers
 
         [HttpGet]
         [Authorize(Roles = "Admin, Manager")]
+        [ResultFilter]
         public async Task<ActionResult<List<IdentityRole>>> GetAll()
         {
             var roles = await _roleManager.Roles.ToListAsync();

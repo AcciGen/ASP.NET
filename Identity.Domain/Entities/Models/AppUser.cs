@@ -11,7 +11,6 @@ namespace Identity.Domain.Entities.Models
     {
         public string FullName { get; set; }
         public int Age { get; set; }
-        public string Status { get; set; }
 
         public DateTimeOffset CreatedDate { get; set; } = DateTimeOffset.UtcNow;
         public DateTimeOffset ModifiedDate { get; set; }
